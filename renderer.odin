@@ -68,11 +68,11 @@ draw_board :: proc(b: board) {
 }
 
 
-render :: proc(b: board) {
+render :: proc(g: game) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.DARKPURPLE)
 
-	draw_board(b)
+	draw_board(g.board)
 
 	rl.EndDrawing()
 }
