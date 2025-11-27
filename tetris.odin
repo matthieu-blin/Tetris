@@ -32,12 +32,7 @@ main :: proc() {
 	b.cells[95] = .cube
 
 
-	for !rl.WindowShouldClose() {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.DARKPURPLE)
-
-		draw_board(b)
-
-		rl.EndDrawing()
+	for (!window_should_close()) {
+		render(b)
 	}
 }

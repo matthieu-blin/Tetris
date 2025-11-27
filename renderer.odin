@@ -16,6 +16,10 @@ init_window :: proc(width_in_pixel: i32, height_in_pixel: i32, title: cstring) {
 destroy_window :: proc() {
 	rl.CloseWindow()
 }
+
+window_should_close :: proc() -> bool {
+	return rl.WindowShouldClose()
+}
 init_texture :: proc() {
 	cubeT = rl.LoadTexture("assets/classic/cube.png")
 }
@@ -61,4 +65,14 @@ draw_board :: proc(b: board) {
 			}
 		}
 	}
+}
+
+
+render :: proc(b: board) {
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.DARKPURPLE)
+
+	draw_board(b)
+
+	rl.EndDrawing()
 }
