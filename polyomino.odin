@@ -24,7 +24,8 @@ rotation :: enum {
 
 polyomino :: struct {
 	shape: polyomino_shape,
-	cell:  [rotation][][2]i32,
+	//fixme : wanna make a [?] here and setup on construction
+	cell:  [rotation][4][2]i32,
 }
 
 piece :: struct {
@@ -34,7 +35,7 @@ piece :: struct {
 	type:      cell_type,
 }
 
-all_polyomino :: #partial [polyomino_shape]polyomino {
+all_polyomino := #partial [polyomino_shape]polyomino {
 	.line_4 = {
 		.line_4,
 		{

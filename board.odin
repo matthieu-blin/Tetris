@@ -27,9 +27,11 @@ cell :: proc(b: board, x, y: i32) -> cell_type {
 }
 
 stamp_piece :: proc(b: board, p: piece) {
+	fmt.printfln("%d ", p.polyomino.cell[p.rotation][1][0])
 	for pos in p.polyomino.cell[p.rotation] {
+		fmt.printfln("%d %d %d %d", pos[0], pos[1], p.position[0], p.position[1])
 		p2 := p.position + pos
-		fmt.printfln(" %d %d", p2[0], p2[1])
+		fmt.printfln("%d %d %d %d", pos[0], pos[1], p2[0], p2[1])
 
 		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 1 && p2[1] < b.num_rows {
 			b.cells[p2[0] + p2[1] * b.num_cols] = .cube
