@@ -1,23 +1,32 @@
 package Tetris
 
+import "core:fmt"
 import rl "vendor:raylib"
 
-input_config_p1 := #partial #sparse[rl.KeyboardKey]action {
-	rl.KeyboardKey.J = .left,
-	rl.KeyboardKey.L = .right,
-	rl.KeyboardKey.K = .down,
-	rl.KeyboardKey.H = .rotate_left,
-	rl.KeyboardKey.M = .rotate_right,
-	rl.KeyboardKey.O = .ok,
-	rl.KeyboardKey.U = .cancel,
+input_config_p1 := [action]rl.KeyboardKey {
+	.left         = rl.KeyboardKey.J,
+	.right        = rl.KeyboardKey.L,
+	.down         = rl.KeyboardKey.K,
+	.rotate_left  = rl.KeyboardKey.H,
+	.rotate_right = rl.KeyboardKey.M,
+	.ok           = rl.KeyboardKey.O,
+	.cancel       = rl.KeyboardKey.U,
+	.none         = rl.KeyboardKey.KEY_NULL,
 }
 
 
 init_input :: proc() {
+
 }
 
-handle_input :: proc() -> (a: action) {
-	pressed := rl.GetKeyPressed()
-	a = input_config_p1[pressed]
-	return a
+
+handle_input :: proc(actions: ^[action]bool) -> bool {
+	got_input := false
+	for key, action in input_config_p1 {
+		if rl.IsKeyDown(key) {
+			actions[action] = true
+			got_input = true
+		}
+	}
+	return got_input
 }

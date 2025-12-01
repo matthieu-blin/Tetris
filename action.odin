@@ -1,8 +1,8 @@
 package Tetris
 
 action :: enum {
-	none,
-	left,
+	none = 0,
+	left = 1,
 	right,
 	down,
 	rotate_left,
@@ -10,3 +10,5 @@ action :: enum {
 	ok,
 	cancel,
 }
+
+actions: [action]bool

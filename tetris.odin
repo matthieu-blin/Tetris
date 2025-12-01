@@ -1,5 +1,6 @@
 package Tetris
 import "core:fmt"
+import "core:time"
 
 import rl "vendor:raylib"
 
@@ -13,8 +14,13 @@ main :: proc() {
 
 	game := init_game(10, 10)
 
+	previous := time.tick_now()
+	now := previous
 	for (!window_should_close()) {
-		game_handle_input(&game)
+		now = time.tick_now()
+		delta := time.duration_seconds(time.tick_diff(previous, now))
+		previous = now
+		game_update(&game, delta)
 		render(game)
 	}
 }

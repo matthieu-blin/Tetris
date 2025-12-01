@@ -12,18 +12,46 @@ init_game :: proc(w, h: i32) -> (g: game) {
 	g.current_polyomino.polyomino = random_polyomino()
 	g.next_polyomino = random_polyomino()
 
-
 	g.current_polyomino.position = {5, 5}
-	stamp_piece(g.board, g.current_polyomino)
+
+	init_input()
 	return g
 }
 
 game_handle_input :: proc(g: ^game) {
-	action := handle_input()
-	#partial switch action {
-	case .left:
-		g.current_polyomino.position -= {-1, 0}
-	case .right:
-		g.current_polyomino.position -= {1, 0}
+	actions = {}
+	if !handle_input(&actions) {
+		return
+	}
+
+	for a in action {
+		if (!actions[a]) {
+			continue
+		}
+		#partial switch a {
+		case .left:
+			g.current_polyomino.position -= {-1, 0}
+		case .right:
+			g.current_polyomino.position -= {1, 0}
+		}
+	}
+}
+
+tick_rate := f64(0.2)
+time_since_last_tick := f64(0)
+
+game_update :: proc(g: ^game, dt: f64) {
+	time_since_last_tick -= dt
+	if (time_since_last_tick < 0) {
+		//pre update
+		unstamp_piece(g.board, g.current_polyomino)
+
+		//update
+		game_handle_input(g)
+
+		//post update
+		stamp_piece(g.board, g.current_polyomino)
+
+		time_since_last_tick = tick_rate
 	}
 }
