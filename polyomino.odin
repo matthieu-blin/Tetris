@@ -15,7 +15,7 @@ polyomino_shape :: enum {
 	branch_4,
 }
 
-rotation :: enum {
+angle :: enum {
 	angle_0,
 	angle_90,
 	angle_180,
@@ -25,14 +25,16 @@ rotation :: enum {
 polyomino :: struct {
 	shape: polyomino_shape,
 	//fixme : wanna make a [?] here and setup on construction
-	cell:  [rotation][4][2]i32,
+	cell:  [angle][4][2]i32,
 }
 
 piece :: struct {
-	polyomino: polyomino,
-	position:  [2]i32,
-	rotation:  rotation,
-	type:      cell_type,
+	polyomino:     polyomino,
+	position:      [2]i32,
+	next_position: [2]i32,
+	rotation:      angle,
+	next_rotation: angle,
+	type:          cell_type,
 }
 
 all_polyomino := #partial [polyomino_shape]polyomino {

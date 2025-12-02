@@ -43,3 +43,8 @@ unstamp_piece :: proc(b: board, p: piece) {
 		}
 	}
 }
+
+can_stamp_piece_next :: proc(b: board, p: piece) -> bool {
+	return true
+
+}
