@@ -2,8 +2,8 @@ package Tetris
 
 import "core:fmt"
 
-default_size: [2]f32 = {0.5, 0.9}
-default_offset: [2]f32 = {0.5, 0.05}
+default_size: [2]f32 = {0.8, 1.0}
+default_offset: [2]f32 = {0.5, 0.1}
 
 board :: struct {
 	num_rows: i32,

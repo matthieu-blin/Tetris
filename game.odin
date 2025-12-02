@@ -30,9 +30,17 @@ game_handle_input :: proc(g: ^game) {
 		}
 		#partial switch a {
 		case .left:
-			g.current_polyomino.position -= {-1, 0}
+			g.current_polyomino.position += {-1, 0}
 		case .right:
-			g.current_polyomino.position -= {1, 0}
+			g.current_polyomino.position += {1, 0}
+		case .rotate_left:
+			g.current_polyomino.rotation = rotation(
+				(i32(g.current_polyomino.rotation) + 1) % cap(rotation),
+			)
+		case .rotate_right:
+			g.current_polyomino.rotation = rotation(
+				(i32(g.current_polyomino.rotation) - 1) % cap(rotation),
+			)
 		}
 	}
 }

@@ -11,6 +11,7 @@ window_size: [2]f32 //float for compute
 init_window :: proc(width_in_pixel: i32, height_in_pixel: i32, title: cstring) {
 	window_size = {f32(width_in_pixel), f32(height_in_pixel)}
 	rl.InitWindow(width_in_pixel, height_in_pixel, title)
+	rl.SetTargetFPS(60)
 }
 
 destroy_window :: proc() {
@@ -29,20 +30,15 @@ init_texture :: proc() {
 // pick max board edge
 celledge :: proc(b: board) -> f32 {
 	board_size_in_pixel := b.size * window_size
-	if board_size_in_pixel[0] > board_size_in_pixel[1] {
-		return board_size_in_pixel[0] / f32(b.num_cols)
-	} else {
-		return board_size_in_pixel[1] / f32(b.num_rows)
-	}
+	return board_size_in_pixel[0] / f32(b.num_cols)
 }
 
 //return offset in pixel for board
 align_board :: proc(b: board) -> (board_position: [2]f32) {
 	offset_in_pixel := b.offset * window_size
 	board_size_in_pixel := b.size * window_size
-    fmt.printfln("%f %f", board_size_in_pixel.x, celledge(b))
 	//align bottom - center
-	board_position.x = offset_in_pixel.x - (board_size_in_pixel.x + 100) / f32(2)
+	board_position.x = offset_in_pixel.x - (board_size_in_pixel.x) / f32(2)
 	board_position.y = board_size_in_pixel.y - offset_in_pixel.y
 	return
 }
@@ -59,7 +55,7 @@ draw_board :: proc(b: board) {
 			defer index += 1
 			switch b.cells[index] {
 			case .none:
-					rl.DrawTextureEx(cubeT, pos, 0, scale, rl.BLUE)
+				rl.DrawTextureEx(cubeT, pos, 0, scale, rl.BLUE)
 			case .cube:
 				{
 					rl.DrawTextureEx(cubeT, pos, 0, scale, rl.RED)
