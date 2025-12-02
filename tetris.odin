@@ -12,7 +12,7 @@ main :: proc() {
 
 	init_texture()
 
-	game := init_game(10, 10)
+	game := init_game(20, 20)
 
 	previous := time.tick_now()
 	now := previous

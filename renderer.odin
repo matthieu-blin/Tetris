@@ -40,8 +40,9 @@ celledge :: proc(b: board) -> f32 {
 align_board :: proc(b: board) -> (board_position: [2]f32) {
 	offset_in_pixel := b.offset * window_size
 	board_size_in_pixel := b.size * window_size
+    fmt.printfln("%f %f", board_size_in_pixel.x, celledge(b))
 	//align bottom - center
-	board_position.x = offset_in_pixel.x - board_size_in_pixel.x / f32(2)
+	board_position.x = offset_in_pixel.x - (board_size_in_pixel.x + 100) / f32(2)
 	board_position.y = board_size_in_pixel.y - offset_in_pixel.y
 	return
 }
@@ -58,6 +59,7 @@ draw_board :: proc(b: board) {
 			defer index += 1
 			switch b.cells[index] {
 			case .none:
+					rl.DrawTextureEx(cubeT, pos, 0, scale, rl.BLUE)
 			case .cube:
 				{
 					rl.DrawTextureEx(cubeT, pos, 0, scale, rl.RED)
