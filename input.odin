@@ -14,17 +14,26 @@ input_config_p1 := [action]rl.KeyboardKey {
 	.none         = rl.KeyboardKey.KEY_NULL,
 }
 
+input_state :: enum {
+	none,
+	pressed,
+	released, //just released
+}
 
 init_input :: proc() {
 
 }
 
 
-handle_input :: proc(actions: ^[action]bool) -> bool {
+handle_input :: proc(actions: ^[action]input_state) -> bool {
 	got_input := false
 	for key, action in input_config_p1 {
 		if rl.IsKeyDown(key) {
-			actions[action] = true
+			actions[action] = .pressed
+			got_input = true
+		}
+		if rl.IsKeyReleased(key) {
+			actions[action] = .released
 			got_input = true
 		}
 	}

@@ -11,4 +11,4 @@ action :: enum {
 	cancel,
 }
 
-actions: [action]bool
+actions: [action]input_state

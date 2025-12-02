@@ -45,6 +45,25 @@ unstamp_piece :: proc(b: board, p: piece) {
 }
 
 can_stamp_piece_next :: proc(b: board, p: piece) -> bool {
+
+	for pos in p.polyomino.cell[p.next_rotation] {
+		p2 := p.next_position + pos
+		//bound check
+		index := p2[0] + p2[1] * b.num_cols
+		//bound check
+		if index < 0 || index >= i32(len(b.cells)) {
+			return false
+		}
+		if p2[0] < 0 || p2[0] >= b.num_cols || p2[1] < 0 || p2[1] >= b.num_rows {
+			return false
+		}
+
+		//cell check
+		if b.cells[index] != .none {
+			return false
+		}
+	}
+
 	return true
 
 }
