@@ -1,6 +1,7 @@
 package Tetris
 
 import "core:fmt"
+import sl "core:slice"
 
 default_size: [2]f32 = {0.8, 1.0}
 default_offset: [2]f32 = {0.5, 0.1}
@@ -29,7 +30,7 @@ cell :: proc(b: board, x, y: i32) -> cell_type {
 stamp_piece :: proc(b: board, p: piece) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
-		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 1 && p2[1] < b.num_rows {
+		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
 			b.cells[p2[0] + p2[1] * b.num_cols] = .cube
 		}
 	}
@@ -38,7 +39,7 @@ stamp_piece :: proc(b: board, p: piece) {
 unstamp_piece :: proc(b: board, p: piece) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
-		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 1 && p2[1] < b.num_rows {
+		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
 			b.cells[p2[0] + p2[1] * b.num_cols] = .none
 		}
 	}
@@ -65,5 +66,27 @@ can_stamp_piece_next :: proc(b: board, p: piece) -> bool {
 	}
 
 	return true
-
 }
+
+//could pass piece to check only specifics lines
+check_and_remove_full_rows :: proc (b:board) ->(nline:i32){
+    nline = 0
+    for x:i32=b.num_rows; x>=0; x-=1 {
+        no_line := false
+        for y:i32=0; y < b.num_cols; y+=1 {
+            if( b.cells[x * b.num_rows + y] == .none){
+                no_line = true
+                break
+            }
+        }
+        if !no_line {
+            nline+=1
+            //copy all array content above
+            sliceA : []cell_type =  b.cells[(x +1) * b.num_rows : ]
+            sliceB : []cell_type =  b.cells[(x ) * b.num_rows : ]
+            sl.swap_between( sliceA, sliceB)
+        }
+    }
+    return
+}
+

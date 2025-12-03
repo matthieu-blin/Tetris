@@ -28,15 +28,23 @@ init_texture :: proc() {
 //compute cell edge
 // cells are just square, want to show entire board
 // pick max board edge
-celledge :: proc(b: board) -> f32 {
+cell_edge :: proc(b: board) -> f32 {
 	board_size_in_pixel := b.size * window_size
-	return board_size_in_pixel[0] / f32(b.num_cols)
+	if (board_size_in_pixel.x < board_size_in_pixel.y) {
+		return board_size_in_pixel.x / f32(b.num_cols)
+	}
+	return board_size_in_pixel.y / f32(b.num_rows)
 }
 
 //return offset in pixel for board
 align_board :: proc(b: board) -> (board_position: [2]f32) {
 	offset_in_pixel := b.offset * window_size
-	board_size_in_pixel := b.size * window_size
+	cell := cell_edge(b)
+    //do not compute using b.size * window_size but using cell size
+	board_size_in_pixel: [2]f32 = {
+		cell * f32(b.num_cols),
+		cell * f32(b.num_rows),
+	}
 	//align bottom - center
 	board_position.x = offset_in_pixel.x - (board_size_in_pixel.x) / f32(2)
 	board_position.y = board_size_in_pixel.y - offset_in_pixel.y
@@ -45,7 +53,7 @@ align_board :: proc(b: board) -> (board_position: [2]f32) {
 
 draw_board :: proc(b: board) {
 	index := 0
-	cell_edge_in_pixel := celledge(b)
+	cell_edge_in_pixel := cell_edge(b)
 	board_position := align_board(b)
 	scale := cell_edge_in_pixel / f32(cubeT.width)
 	for y: i32 = 0; y < b.num_rows; y += 1 {
