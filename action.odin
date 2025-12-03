@@ -11,4 +11,5 @@ action :: enum {
 	cancel,
 }
 
-actions: [action]input_state
+//action duration
+actions: [action]f64

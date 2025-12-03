@@ -19,15 +19,12 @@ init_game :: proc(w, h: i32) -> (g: game) {
 	return g
 }
 
-game_handle_input :: proc(g: ^game, check: input_state) -> bool {
-	actions = {}
+game_handle_input :: proc(g: ^game, dt: f64) -> bool {
 	handled := false
-	if !handle_input(&actions) {
-		return handled
-	}
+	handle_input(&actions, dt)
 
 	for a in action {
-		if (actions[a] != check) {
+		if (actions[a] < 0 || actions[a] > 0 && actions[a] < 0.2) {
 			continue
 		}
 		handled = true
@@ -53,15 +50,12 @@ tick_rate := f64(0.2)
 time_since_last_tick := f64(0)
 
 game_update :: proc(g: ^game, dt: f64) {
-	if (game_handle_input(g, input_state.released)) {
+	if (game_handle_input(g, dt)) {
 		game_update_current_polyomino(g)
-		time_since_last_tick = tick_rate
 	}
 	time_since_last_tick -= dt
 	if (time_since_last_tick < 0) {
-		if (game_handle_input(g, input_state.pressed)) {
-			game_update_current_polyomino(g)
-		}
+		game_update_current_polyomino(g)
 		time_since_last_tick = tick_rate
 	}
 }
