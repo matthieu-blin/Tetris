@@ -69,24 +69,23 @@ can_stamp_piece_next :: proc(b: board, p: piece) -> bool {
 }
 
 //could pass piece to check only specifics lines
-check_and_remove_full_rows :: proc (b:board) ->(nline:i32){
-    nline = 0
-    for x:i32=b.num_rows; x>=0; x-=1 {
-        no_line := false
-        for y:i32=0; y < b.num_cols; y+=1 {
-            if( b.cells[x * b.num_rows + y] == .none){
-                no_line = true
-                break
-            }
-        }
-        if !no_line {
-            nline+=1
-            //copy all array content above
-            sliceA : []cell_type =  b.cells[(x +1) * b.num_rows : ]
-            sliceB : []cell_type =  b.cells[(x ) * b.num_rows : ]
-            sl.swap_between( sliceA, sliceB)
-        }
-    }
-    return
+check_and_remove_full_rows :: proc(b: board) -> (nline: i32) {
+	nline = 0
+	for x: i32 = b.num_rows - 1; x >= 0; x -= 1 {
+		no_line := false
+		for y: i32 = 0; y < b.num_cols; y += 1 {
+			if (b.cells[x * b.num_cols + y] == .none) {
+				no_line = true
+				break
+			}
+		}
+		if !no_line {
+			nline += 1
+			//copy all array content above
+			sliceA: []cell_type = b.cells[(x + 1) * b.num_cols:]
+			sliceB: []cell_type = b.cells[(x) * b.num_cols:]
+			copy(sliceB, sliceA)
+		}
+	}
+	return
 }
-

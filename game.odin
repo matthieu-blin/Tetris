@@ -17,7 +17,7 @@ init_game :: proc(w, h: i32) -> (g: game) {
 game_next_piece :: proc(g: ^game) {
 	p: piece = {
 		polyomino     = random_polyomino(),
-		position = {g.board.num_cols / 2, g.board.num_rows - 1},
+		position      = {g.board.num_cols / 2, g.board.num_rows - 1},
 		next_position = {g.board.num_cols / 2, g.board.num_rows - 1},
 	}
 	g.current_polyomino = p
@@ -67,6 +67,8 @@ game_update :: proc(g: ^game, dt: f64) {
 	if (time_since_last_tick < 0) {
 		g.current_polyomino.next_position.y = g.current_polyomino.position.y - 1
 		if (game_update_current_polyomino(g)) {
+
+			check_and_remove_full_rows(g.board)
 			game_next_piece(g)
 		}
 
