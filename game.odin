@@ -5,10 +5,14 @@ game :: struct {
 	board:             board,
 	current_polyomino: piece,
 	next_polyomino:    polyomino,
+	nb_line:           i32,
+	time_left:         f64,
 }
 
 init_game :: proc(w, h: i32) -> (g: game) {
 	g.board = init_board(w, h)
+	g.nb_line = 7
+	g.time_left = 12 * 60
 	game_next_piece(&g)
 	init_input()
 	return g
@@ -60,6 +64,8 @@ tick_rate := f64(1.2)
 time_since_last_tick := f64(0)
 
 game_update :: proc(g: ^game, dt: f64) {
+
+	g.time_left -= dt
 	if (game_handle_input(g, dt)) {
 		game_update_current_polyomino(g)
 	}
@@ -68,7 +74,10 @@ game_update :: proc(g: ^game, dt: f64) {
 		g.current_polyomino.next_position.y = g.current_polyomino.position.y - 1
 		if (game_update_current_polyomino(g)) {
 
-			check_and_remove_full_rows(g.board)
+			g.nb_line -= check_and_remove_full_rows(g.board)
+			if (g.nb_line < 0) {
+				g.nb_line = 0
+			}
 			game_next_piece(g)
 		}
 

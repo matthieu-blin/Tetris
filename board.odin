@@ -3,8 +3,8 @@ package Tetris
 import "core:fmt"
 import sl "core:slice"
 
-default_size: [2]f32 = {0.8, 1.0}
-default_offset: [2]f32 = {0.5, 0.1}
+default_size: [2]f32 = {0.6, 0.6}
+default_offset: [2]f32 = {0.5, -0.3}
 
 board :: struct {
 	num_rows: i32,
@@ -31,7 +31,7 @@ stamp_piece :: proc(b: board, p: piece) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
 		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
-			b.cells[p2[0] + p2[1] * b.num_cols] = .cube
+			b.cells[p2[0] + p2[1] * b.num_cols] = p.polyomino.type
 		}
 	}
 }
