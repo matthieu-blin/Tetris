@@ -95,27 +95,50 @@ render :: proc(g: game) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
 
-	draw_board(g.board)
-	buf: [4]byte
-	nb_line_str := strconv.write_int(buf[:], i64(g.nb_line), 10)
-	buf2: [8]byte
-	time_left_str := strconv.write_float(buf2[:], g.time_left, 'f', 2, 64)
-	rl.DrawTextEx(
-		font,
-		strings.unsafe_string_to_cstring(nb_line_str),
-		rl.Vector2{window_size.x / 4, 15},
-		38,
-		2,
-		rl.WHITE,
-	)
-	rl.DrawTextEx(
-		font,
-		strings.unsafe_string_to_cstring(time_left_str),
-		rl.Vector2{window_size.x * 3 / 4, 15},
-		38,
-		2,
-		rl.WHITE,
-	)
 
-	rl.EndDrawing()
+    #partial switch g.state {
+
+    case .intro: {
+        str : cstring = "7 / 12"
+        str_size := rl.MeasureText(str, 100)
+        rl.DrawTextEx(
+            font,
+            str,
+            rl.Vector2{(window_size.x - f32(str_size)) / 2  , window_size.y / 2 - 32},
+            100,
+            2,
+            rl.WHITE,
+        )
+    }
+
+    case .game:  {
+        draw_board(g.board)
+        buf: [4]byte
+        nb_line_str := strconv.write_int(buf[:], i64(g.nb_line), 10)
+        time_buf: [16]byte
+        builder := strings.builder_from_bytes(time_buf[:])
+        mins := int(g.time_left / 60.0)
+        seconds := int(g.time_left) % 60
+        strings.write_int(&builder, mins)
+        strings.write_byte(&builder, ':')
+        strings.write_int(&builder, seconds)
+        rl.DrawTextEx(
+            font,
+            strings.unsafe_string_to_cstring(nb_line_str),
+            rl.Vector2{window_size.x * 3 / 4, 15},
+            38,
+            2,
+            rl.WHITE,
+        )
+        rl.DrawTextEx(
+            font,
+            strings.to_cstring(&builder),
+            rl.Vector2{window_size.x / 4, 15},
+            38,
+            2,
+            rl.WHITE,
+        )
+        }
+    }
+    rl.EndDrawing()
 }

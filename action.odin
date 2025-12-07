@@ -12,4 +12,5 @@ action :: enum {
 }
 
 //action duration
-actions: [action]f64
+actions_p1: [action]f64
+actions_p2: [action]f64
