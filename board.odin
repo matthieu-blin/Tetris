@@ -11,7 +11,10 @@ board :: struct {
 	num_cols: i32,
 	size:     [2]f32,
 	offset:   [2]f32,
-	cells:    [dynamic]cell_type,
+	cells:    [dynamic]struct {
+		frozen: bool,
+		type:   cell_type,
+	},
 }
 
 init_board :: proc(_rows: i32, _cols: i32) -> (b: board) {
@@ -23,15 +26,11 @@ init_board :: proc(_rows: i32, _cols: i32) -> (b: board) {
 	return b
 }
 
-cell :: proc(b: board, x, y: i32) -> cell_type {
-	return b.cells[x + y * b.num_cols]
-}
-
 stamp_piece :: proc(b: board, p: piece) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
 		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
-			b.cells[p2[0] + p2[1] * b.num_cols] = p.polyomino.type
+			b.cells[p2[0] + p2[1] * b.num_cols].type = p.polyomino.type
 		}
 	}
 }
@@ -40,7 +39,7 @@ unstamp_piece :: proc(b: board, p: piece) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
 		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
-			b.cells[p2[0] + p2[1] * b.num_cols] = .none
+			b.cells[p2[0] + p2[1] * b.num_cols].type = .none
 		}
 	}
 }
@@ -60,7 +59,7 @@ can_stamp_piece_next :: proc(b: board, p: piece) -> bool {
 		}
 
 		//cell check
-		if b.cells[index] != .none {
+		if b.cells[index].type != .none {
 			return false
 		}
 	}
@@ -74,7 +73,7 @@ check_and_remove_full_rows :: proc(b: board) -> (nline: i32) {
 	for x: i32 = b.num_rows - 1; x >= 0; x -= 1 {
 		no_line := false
 		for y: i32 = 0; y < b.num_cols; y += 1 {
-			if (b.cells[x * b.num_cols + y] == .none) {
+			if (b.cells[x * b.num_cols + y].type == .none) {
 				no_line = true
 				break
 			}
@@ -82,8 +81,8 @@ check_and_remove_full_rows :: proc(b: board) -> (nline: i32) {
 		if !no_line {
 			nline += 1
 			//copy all array content above
-			sliceA: []cell_type = b.cells[(x + 1) * b.num_cols:]
-			sliceB: []cell_type = b.cells[(x) * b.num_cols:]
+			sliceA := b.cells[(x + 1) * b.num_cols:]
+			sliceB := b.cells[(x) * b.num_cols:]
 			copy(sliceB, sliceA)
 		}
 	}

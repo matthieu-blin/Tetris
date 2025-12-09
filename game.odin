@@ -21,7 +21,7 @@ game :: struct {
 init_game :: proc(w, h: i32) -> (g: game) {
 	g.board = init_board(w, h)
 	g.nb_line = 12
-	g.time_left = 5
+	g.time_left = 0
 	g.state = .intro
 	game_next_piece(&g)
 	game_next_piece_p2(&g)

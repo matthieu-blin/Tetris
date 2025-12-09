@@ -2,7 +2,6 @@ package Tetris
 import "core:fmt"
 import "core:time"
 
-import rl "vendor:raylib"
 
 main :: proc() {
 
