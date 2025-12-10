@@ -12,7 +12,9 @@ input_config_delay := #partial [action]f64 {
 	.cancel       = 0.1,
 }
 
-input_config_p1 := [action]rl.KeyboardKey {
+input_config_keyboard :: [action]rl.KeyboardKey
+
+input_config_p1 := input_config_keyboard {
 	.left         = rl.KeyboardKey.A,
 	.right        = rl.KeyboardKey.D,
 	.down         = rl.KeyboardKey.S,
@@ -23,7 +25,7 @@ input_config_p1 := [action]rl.KeyboardKey {
 	.none         = rl.KeyboardKey.KEY_NULL,
 }
 
-input_config_p2 := [action]rl.KeyboardKey {
+input_config_p2 := input_config_keyboard {
 	.left         = rl.KeyboardKey.LEFT,
 	.right        = rl.KeyboardKey.RIGHT,
 	.down         = rl.KeyboardKey.DOWN,
@@ -39,9 +41,9 @@ init_input :: proc() {
 }
 
 
-handle_input :: proc(actions: ^[action]f64, actionsp2: ^[action]f64, dt: f64) {
+handle_input :: proc(actions: ^[action]f64, input_config: input_config_keyboard, dt: f64) {
 	got_input := false
-	for key, action in input_config_p1 {
+	for key, action in input_config {
 		if rl.IsKeyDown(key) {
 			if (actions[action] < 0) {
 				actions[action] = 0
@@ -49,18 +51,7 @@ handle_input :: proc(actions: ^[action]f64, actionsp2: ^[action]f64, dt: f64) {
 				actions[action] += dt
 			}
 		} else {
-			actions^[action] = -1
-		}
-	}
-	for key, action in input_config_p2 {
-		if rl.IsKeyDown(key) {
-			if (actionsp2[action] < 0) {
-				actionsp2[action] = 0
-			} else {
-				actionsp2[action] += dt
-			}
-		} else {
-			actionsp2^[action] = -1
+			actions[action] = -1
 		}
 	}
 }

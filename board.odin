@@ -26,16 +26,17 @@ init_board :: proc(_rows: i32, _cols: i32) -> (b: board) {
 	return b
 }
 
-stamp_piece :: proc(b: board, p: piece) {
+stamp_piece :: proc(b: board, p: ^piece, freeze: bool = false) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
 		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
 			b.cells[p2[0] + p2[1] * b.num_cols].type = p.polyomino.type
+			b.cells[p2[0] + p2[1] * b.num_cols].frozen = freeze
 		}
 	}
 }
 
-unstamp_piece :: proc(b: board, p: piece) {
+unstamp_piece :: proc(b: board, p: ^piece) {
 	for pos in p.polyomino.cell[p.rotation] {
 		p2 := p.position + pos
 		if p2[0] >= 0 && p2[0] < b.num_cols && p2[1] >= 0 && p2[1] < b.num_rows {
@@ -44,27 +45,40 @@ unstamp_piece :: proc(b: board, p: piece) {
 	}
 }
 
-can_stamp_piece_next :: proc(b: board, p: piece) -> bool {
+//result true if next movement do not overlap another not empty cell
+//frost_bite if overlap include frozen cell
+can_stamp_piece_next :: proc(b: board, p: ^piece) -> (result, frost_bite: bool) {
 
+	result = true
+	frost_bite = false
 	for pos in p.polyomino.cell[p.next_rotation] {
 		p2 := p.next_position + pos
 		//bound check
 		index := p2[0] + p2[1] * b.num_cols
 		//bound check
 		if index < 0 || index >= i32(len(b.cells)) {
-			return false
+			result = false
+			frost_bite = index < 0
+			continue
 		}
 		if p2[0] < 0 || p2[0] >= b.num_cols || p2[1] < 0 || p2[1] >= b.num_rows {
-			return false
+			result = false
+			frost_bite = p2[1] < 0
+			continue
 		}
 
 		//cell check
 		if b.cells[index].type != .none {
-			return false
+			result = false
+			frost_bite = b.cells[index].frozen
+			if frost_bite {
+				//early return if blocking cell is frozen
+				return
+			}
+			//if not, must check other cell in case of frozen cell
 		}
 	}
-
-	return true
+	return
 }
 
 //could pass piece to check only specifics lines

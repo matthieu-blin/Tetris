@@ -38,7 +38,7 @@ polyomino :: struct {
 }
 
 piece :: struct {
-	polyomino:     polyomino,
+	polyomino:     ^polyomino,
 	position:      [2]i32,
 	next_position: [2]i32,
 	rotation:      angle,
@@ -118,7 +118,7 @@ all_polyomino := #partial [polyomino_shape]polyomino {
 	},
 }
 
-random_polyomino :: proc() -> polyomino {
+random_polyomino :: proc() -> ^polyomino {
 	shape := polyomino_shape(rand.int_max(len(all_polyomino)))
-	return all_polyomino[shape]
+	return &all_polyomino[shape]
 }
