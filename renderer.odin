@@ -58,6 +58,18 @@ align_board :: proc(b: board) -> (board_position: [2]f32) {
 	return
 }
 
+box_to_pixel :: proc(size: [2]f32, offset: [2]f32) -> (pos: [2]f32, size_px: [2]f32) {
+	size_in_pixel := size * window_size
+	size_px.x = (size_in_pixel.x)
+	size_px.y = (size_in_pixel.y)
+	//align
+	offset_in_pixel := offset * window_size
+	//center
+	pos.x = (offset_in_pixel.x - (size_in_pixel.x) / f32(2))
+	pos.y = (offset_in_pixel.y - (size_in_pixel.y) / f32(2))
+	return
+}
+
 draw_board :: proc(b: board) {
 	index := 0
 	cell_edge_in_pixel := cell_edge(b)
@@ -111,6 +123,37 @@ render :: proc(g: game) {
 				rl.WHITE,
 			)
 		}
+	case .menu:
+		{
+			str: cstring = "7 / 12"
+			index := -len(main_menu) / 2
+			for button in main_menu {
+				pos, size := box_to_pixel(button.size, button.offset)
+				str_size := rl.MeasureText(
+					strings.unsafe_string_to_cstring(button.text),
+					i32(size.y),
+				)
+				str_pos_x := pos.x + (size.x - f32(str_size)) / f32(2)
+				rl.DrawTextEx(
+					font,
+					strings.unsafe_string_to_cstring(button.text),
+					rl.Vector2{str_pos_x, pos.y + f32(index) * (size.y + 2)},
+					size.y,
+					2,
+					rl.WHITE,
+				)
+				rl.DrawRectangleLines(
+					i32(pos.x),
+					i32(pos.y + f32(index) * (size.y + 2)),
+					i32(size.x),
+					i32(size.y),
+					rl.WHITE,
+				)
+				index += 1
+			}
+
+		}
+
 
 	case .game:
 		{

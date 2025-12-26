@@ -3,6 +3,7 @@ import "core:fmt"
 
 game_state :: enum {
 	intro,
+	menu,
 	game,
 	won,
 	gameover,
@@ -33,8 +34,8 @@ game :: struct {
 init_game :: proc(w, h: i32) -> (g: game) {
 	g.board = init_board(w, h)
 	g.nb_line = 12
-	g.time_left = 0
-	g.state = .intro
+	g.time_left = 10
+	g.state = .menu
 	init_input()
 	init_player(&g, {g.board.num_cols / 4, g.board.num_rows - 1}, input_config_p1)
 	init_player(&g, {g.board.num_cols * 3 / 4, g.board.num_rows - 1}, input_config_p2)
