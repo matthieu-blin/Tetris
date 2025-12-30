@@ -125,9 +125,13 @@ render :: proc(g: game) {
 		}
 	case .menu:
 		{
-			str: cstring = "7 / 12"
-			index := -len(main_menu) / 2
+			y_order := -len(main_menu) / 2
+			index := 0
 			for button in main_menu {
+				color := rl.WHITE
+				if index == main_menu_selected {
+					color = rl.GREEN
+				}
 				pos, size := box_to_pixel(button.size, button.offset)
 				str_size := rl.MeasureText(
 					strings.unsafe_string_to_cstring(button.text),
@@ -137,18 +141,19 @@ render :: proc(g: game) {
 				rl.DrawTextEx(
 					font,
 					strings.unsafe_string_to_cstring(button.text),
-					rl.Vector2{str_pos_x, pos.y + f32(index) * (size.y + 2)},
+					rl.Vector2{str_pos_x, pos.y + f32(y_order) * (size.y + 2)},
 					size.y,
 					2,
-					rl.WHITE,
+					color,
 				)
 				rl.DrawRectangleLines(
 					i32(pos.x),
-					i32(pos.y + f32(index) * (size.y + 2)),
+					i32(pos.y + f32(y_order) * (size.y + 2)),
 					i32(size.x),
 					i32(size.y),
-					rl.WHITE,
+					color,
 				)
+				y_order += 1
 				index += 1
 			}
 
@@ -159,11 +164,13 @@ render :: proc(g: game) {
 		{
 			draw_board(g.board)
 			buf: [4]byte
-			nb_line_str := strconv.write_int(buf[:], i64(g.nb_line), 10)
+			nb_line := g.type == .classic ? -g.nb_line : g.nb_line
+			nb_line_str := strconv.write_int(buf[:], i64(nb_line), 10)
 			time_buf: [16]byte
+			time := g.type == .classic ? -g.time_left : g.time_left
 			builder := strings.builder_from_bytes(time_buf[:])
-			mins := int(g.time_left / 60.0)
-			seconds := int(g.time_left) % 60
+			mins := int(time / 60.0)
+			seconds := int(time) % 60
 			strings.write_int(&builder, mins)
 			strings.write_byte(&builder, ':')
 			strings.write_int(&builder, seconds)

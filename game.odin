@@ -10,7 +10,7 @@ game_state :: enum {
 }
 
 piece_handler :: struct {
-	actions: [action]f64,
+	actions: [action]input_action,
 	piece:   piece,
 	frozen:  bool,
 }
@@ -22,23 +22,24 @@ player :: struct {
 	config:         input_config_keyboard,
 }
 
+game_type :: enum {
+	classic,
+	timed,
+}
 game :: struct {
 	board:          board,
 	piece_handlers: [dynamic]^piece_handler,
 	players:        [dynamic]^player,
+	type:           game_type,
 	nb_line:        i32,
 	time_left:      f64,
 	state:          game_state,
 }
 
 init_game :: proc(w, h: i32) -> (g: game) {
-	g.board = init_board(w, h)
-	g.nb_line = 12
-	g.time_left = 10
 	g.state = .menu
 	init_input()
 	init_player(&g, {g.board.num_cols / 4, g.board.num_rows - 1}, input_config_p1)
-	init_player(&g, {g.board.num_cols * 3 / 4, g.board.num_rows - 1}, input_config_p2)
 	return g
 }
 
@@ -51,6 +52,16 @@ init_player :: proc(g: ^game, start_position: [2]i32, config: input_config_keybo
 	append(&g.players, new_player)
 	append(&g.piece_handlers, new_player.piece_handler)
 }
+
+clear_players :: proc(g: ^game) {
+	for player in g.players {
+		free(player.piece_handler)
+		free(player)
+	}
+	clear(&g.players)
+	clear(&g.piece_handlers)
+}
+
 
 next_piece :: proc(g: ^game, p: ^player) {
 	new_piece: piece = {
@@ -66,31 +77,84 @@ next_piece :: proc(g: ^game, p: ^player) {
 
 game_handle_input :: proc(g: ^game, dt: f64) -> bool {
 	handled := false
-	for &p in g.players {
-		handle_input(&p.piece_handler.actions, p.config, dt)
-	}
-
-	for &ph in g.piece_handlers {
-		for a in action {
-			if (ph.actions[a] < 0 || ph.actions[a] > 0 && ph.actions[a] < input_config_delay[a]) {
-				continue
+	#partial switch g.state {
+	case .menu:
+		{
+			for &p in g.players {
+				handle_input(&menu_actions, p.config, menu_input_config_delay, dt)
+				break
 			}
-			handled = true
-			#partial switch a {
-			case .left:
-				ph.piece.next_position.x = ph.piece.position.x - 1
-			case .right:
-				ph.piece.next_position.x = ph.piece.position.x + 1
-			case .down:
-				ph.piece.next_position.y = ph.piece.position.y - 1
-			case .cancel:
-				ph.piece.next_position.y = ph.piece.position.y + 1
-			case .rotate_left:
-				ph.piece.next_rotation = angle((i32(ph.piece.rotation) + 1) % cap(angle))
-			case .rotate_right:
-				ph.piece.next_rotation = angle(
-					(i32(ph.piece.rotation) - 1) < 0 ? cap(angle) - 1 : (i32(ph.piece.rotation) - 1),
-				)
+			for a in action {
+				if (!menu_actions[a].valid) {continue}
+
+				#partial switch a {
+				case .down:
+					main_menu_selected = (main_menu_selected + 1) % len(main_menu)
+				case .up:
+					main_menu_selected =
+						(main_menu_selected == 0 ? len(main_menu) : main_menu_selected) - 1
+				case .ok:
+					switch main_menu_selected {
+					case 0:
+						fmt.print("dsds")
+						g.board = init_board(20, 10)
+						g.type = .classic
+						g.nb_line = 0
+						g.time_left = 0
+						clear_players(g)
+						init_player(
+							g,
+							{g.board.num_cols / 4, g.board.num_rows - 1},
+							input_config_p1,
+						)
+						g.state = .game
+					case 1:
+						g.board = init_board(20, 30)
+						g.type = .timed
+						g.nb_line = 12
+						g.time_left = 7 * 60
+						clear_players(g)
+						init_player(
+							g,
+							{g.board.num_cols / 4, g.board.num_rows - 1},
+							input_config_p1,
+						)
+						init_player(
+							g,
+							{g.board.num_cols * 3 / 4, g.board.num_rows - 1},
+							input_config_p2,
+						)
+						g.state = .game
+					}
+				}
+			}
+		}
+	case .game:
+		{
+			for &p in g.players {
+				handle_input(&p.piece_handler.actions, p.config, input_config_delay, dt)
+			}
+			for &ph in g.piece_handlers {
+				for a in action {
+					if (!ph.actions[a].valid) {continue}
+					handled = true
+					#partial switch a {
+					case .left:
+						ph.piece.next_position.x = ph.piece.position.x - 1
+					case .right:
+						ph.piece.next_position.x = ph.piece.position.x + 1
+					case .down:
+						ph.piece.next_position.y = ph.piece.position.y - 1
+					case .cancel:
+						ph.piece.next_position.y = ph.piece.position.y + 1
+					case .rotate_left:
+						ph.piece.next_rotation = angle((i32(ph.piece.rotation) + 1) % cap(angle))
+					case .rotate_right:
+						ph.piece.next_rotation = angle(
+							(i32(ph.piece.rotation) - 1) < 0 ? cap(angle) - 1 : (i32(ph.piece.rotation) - 1),
+						)
+					}
+				}
 			}
 		}
 	}
@@ -102,17 +166,17 @@ time_since_last_tick := f64(0)
 
 game_update :: proc(g: ^game, dt: f64) {
 	g.time_left -= dt
+
 	if (g.state == .intro) {
 		if (g.time_left <= 0) {
-			g.state = .game
-			g.time_left = 7 * 60
+			g.state = .menu
 		}
 	}
 
-	if (g.state == .game) {
-		//update input
-		any_input := game_handle_input(g, dt)
+	//update input
+	any_input := game_handle_input(g, dt)
 
+	if (g.state == .game) {
 		//update affected pieces
 		if any_input {
 			for &ph in g.piece_handlers {
@@ -143,15 +207,17 @@ game_update :: proc(g: ^game, dt: f64) {
 				}
 
 				//victory check
-				if (g.nb_line <= 0) {
+				if (g.type == .timed && g.nb_line <= 0) {
 					g.nb_line = 0
 					g.state = .won
 				}
-
-
 			}
 			time_since_last_tick = tick_rate
 		}
+		if (g.type == .timed && g.time_left <= 0) {
+			g.state = .gameover
+		}
+
 	}
 }
 
