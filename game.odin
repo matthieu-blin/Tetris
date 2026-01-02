@@ -1,5 +1,6 @@
 package Tetris
 import "core:fmt"
+import "core:math"
 
 game_state :: enum {
 	intro,
@@ -37,7 +38,7 @@ game :: struct {
 }
 
 init_game :: proc(w, h: i32) -> (g: game) {
-	g.state = .menu
+	g.state = .won
 	init_input()
 	init_player(&g, {g.board.num_cols / 4, g.board.num_rows - 1}, input_config_p1)
 	return g
@@ -104,7 +105,7 @@ game_handle_input :: proc(g: ^game, dt: f64) -> bool {
 						clear_players(g)
 						init_player(
 							g,
-							{g.board.num_cols / 4, g.board.num_rows - 1},
+							{g.board.num_cols / 2, g.board.num_rows - 1},
 							input_config_p1,
 						)
 						g.state = .game
@@ -161,8 +162,13 @@ game_handle_input :: proc(g: ^game, dt: f64) -> bool {
 	return handled
 }
 
-tick_rate := f64(1.2)
+level: u32 = 1
+tick_rate := f64(0.8)
 time_since_last_tick := f64(0)
+
+update_tick_rate :: proc() {
+	tick_rate = math.pow_f64(0.8 - (f64(level - 1) * 0.007), f64(level - 1))
+}
 
 game_update :: proc(g: ^game, dt: f64) {
 	g.time_left -= dt
@@ -189,15 +195,36 @@ game_update :: proc(g: ^game, dt: f64) {
 		time_since_last_tick -= dt
 		if (time_since_last_tick < 0) {
 			got_frozen := false
+			piece_above_line := false
 			for &ph in g.piece_handlers {
 				//move down every piece
 				ph.piece.next_position.y = ph.piece.next_position.y - 1
 				//update frozen state
 				got_frozen |= game_update_polyomino(g, ph, true)
+
+				if (got_frozen) {
+					if ph.piece.position.y >= g.board.num_rows - 1 {
+						piece_above_line = true
+					}
+				}
 			}
 			//check for line only if one piece got frozen
 			if got_frozen {
-				g.nb_line -= check_and_remove_full_rows(g.board)
+				nline := check_and_remove_full_rows(g.board)
+				if (nline > 0) {
+					switch g.type {
+					case .classic:
+						g.nb_line += nline
+						if (g.nb_line % 10 == 0) {
+							level += 1
+							update_tick_rate()
+						}
+					case .timed:
+						level += 1
+						update_tick_rate()
+						g.nb_line -= nline
+					}
+				}
 
 				//compute next piece for player frozen piece handler
 				for &p in g.players {
@@ -210,8 +237,11 @@ game_update :: proc(g: ^game, dt: f64) {
 				if (g.type == .timed && g.nb_line <= 0) {
 					g.nb_line = 0
 					g.state = .won
+				} else if piece_above_line {
+					g.state = .gameover
 				}
 			}
+
 			time_since_last_tick = tick_rate
 		}
 		if (g.type == .timed && g.time_left <= 0) {
